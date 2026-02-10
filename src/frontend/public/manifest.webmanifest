@@ -1,0 +1,17 @@
+{
+  "name": "Invoice Manager",
+  "short_name": "Invoices",
+  "description": "Offline-first invoice and customer management",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fef3f2",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/assets/generated/app-icon.dim_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

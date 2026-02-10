@@ -1,0 +1,434 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Offline-first customer & invoice manager (PWA-ready) with local persistence, image preview, search, backup/export, and optional IC sync",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Implement offline-first local persistence for customers, invoices, and bill images with an online/offline status indicator.",
+      "acceptanceCriteria": [
+        "With the device offline, the user can open the app, view existing customers/invoices, and create new customers/invoices without errors.",
+        "After a full page refresh/reopen, previously created customers/invoices/images are still present.",
+        "The UI clearly indicates offline/online status (text-only indicator is fine)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/offline/db.ts",
+          "operation": "create",
+          "description": "Create a small IndexedDB wrapper (open/upgrade, basic get/put/delete/list) to persist customers, invoices, and image blobs so data survives reloads and works fully offline."
+        },
+        {
+          "path": "frontend/src/lib/offline/models.ts",
+          "operation": "create",
+          "description": "Define frontend-only types for Customer, Invoice, InvoiceLineItem, and StoredImage (including references/keys for persisted blobs) to standardize local data handling."
+        },
+        {
+          "path": "frontend/src/lib/offline/repository.ts",
+          "operation": "create",
+          "description": "Implement a repository layer for offline CRUD operations (customers/invoices/images) using the IndexedDB wrapper; keep all reads/writes local-first with no network dependency."
+        },
+        {
+          "path": "frontend/src/hooks/useOnlineStatus.ts",
+          "operation": "create",
+          "description": "Add a hook that tracks navigator.onLine and listens to online/offline events for a reliable offline/online status signal."
+        },
+        {
+          "path": "frontend/src/components/OnlineStatusIndicator.tsx",
+          "operation": "create",
+          "description": "Create a text-only online/offline indicator component for the app header using the useOnlineStatus hook."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "create",
+          "description": "Create the app shell and top-level routing, wiring the OnlineStatusIndicator into a persistent header so status is always visible."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Add customer management (create/view/edit/delete) with structured fields and a customer detail view.",
+      "acceptanceCriteria": [
+        "User can add a customer with required field: name; optional fields can be empty.",
+        "Customer list renders all customers and selecting a customer opens a detail view showing the structured fields.",
+        "User can edit customer fields and changes persist offline.",
+        "User can delete a customer and it no longer appears in search or lists."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/CustomersListPage.tsx",
+          "operation": "create",
+          "description": "Implement the customers list screen (mobile-first) backed by the offline repository, with navigation into customer detail and actions to create a new customer."
+        },
+        {
+          "path": "frontend/src/pages/CustomerDetailPage.tsx",
+          "operation": "create",
+          "description": "Implement a structured customer detail view that renders name/phone/email/address/notes clearly and provides edit/delete actions with offline persistence."
+        },
+        {
+          "path": "frontend/src/components/customers/CustomerForm.tsx",
+          "operation": "create",
+          "description": "Create a reusable customer create/edit form with validation (name required) and clear English error messages; compose shadcn-ui form controls/dialog patterns as needed. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/lib/offline/repository.ts",
+          "operation": "modify",
+          "description": "Add customer CRUD functions (create/update/delete/list/get) and ensure deletions remove the customer from list queries and prevent it appearing in subsequent searches."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire Customers list and Customer detail routes into the app navigation (Customers -> Customer detail)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add invoice management per customer with image attachments stored offline and invoice detail viewing.",
+      "acceptanceCriteria": [
+        "From a customer detail page, user can create an invoice for that customer.",
+        "User can attach multiple images to an invoice using the device file picker.",
+        "Invoices are listed under the correct customer and open into an invoice detail view.",
+        "All invoice data and images persist offline after refresh."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/invoices/InvoiceForm.tsx",
+          "operation": "create",
+          "description": "Create an invoice create/edit form (invoice number/date/description or line items/total/status) including multi-image file picker support; compose shadcn-ui inputs, buttons, and dialogs/sheets for mobile UX. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/InvoiceDetailPage.tsx",
+          "operation": "create",
+          "description": "Implement an invoice detail page that shows the invoice fields and renders attached images (loaded from offline storage) in a simple gallery."
+        },
+        {
+          "path": "frontend/src/components/customers/CustomerInvoicesPanel.tsx",
+          "operation": "create",
+          "description": "Add a customer detail subview that lists invoices for the current customer and links into InvoiceDetailPage."
+        },
+        {
+          "path": "frontend/src/lib/offline/repository.ts",
+          "operation": "modify",
+          "description": "Add invoice CRUD functions scoped to a customer and add image persistence support (store blobs and reference keys on the invoice)."
+        },
+        {
+          "path": "frontend/src/pages/CustomerDetailPage.tsx",
+          "operation": "modify",
+          "description": "Wire invoice creation from the customer detail page and render the CustomerInvoicesPanel under the customer’s structured fields."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the Invoice detail route and ensure navigation from customer invoices list opens the correct invoice."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Implement preview-before-finalize flow for invoice bill images with removal/replacement before saving.",
+      "acceptanceCriteria": [
+        "When images are selected, thumbnails (and a larger preview on tap/click) are shown before the invoice is finalized.",
+        "User can remove/replace selected images during the preview step before final save.",
+        "Invoice is not persisted as finalized until the user confirms (e.g., “Finalize/Save Invoice”)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/invoices/ImagePreviewGallery.tsx",
+          "operation": "create",
+          "description": "Create a preview gallery component that displays selected (not-yet-finalized) image thumbnails with a larger preview on tap/click and actions to remove/replace images prior to final save; compose shadcn-ui dialog components for the larger preview. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/invoices/InvoiceFinalizeStep.tsx",
+          "operation": "create",
+          "description": "Implement a confirmation step UI that requires explicit user action to finalize/save the invoice, preventing persistence of the finalized invoice until confirmed."
+        },
+        {
+          "path": "frontend/src/components/invoices/InvoiceForm.tsx",
+          "operation": "modify",
+          "description": "Integrate the ImagePreviewGallery and InvoiceFinalizeStep so selected images are previewed and editable before final save, and ensure invoices are only persisted on explicit finalize/confirm."
+        },
+        {
+          "path": "frontend/src/lib/offline/repository.ts",
+          "operation": "modify",
+          "description": "Ensure the repository supports a two-phase flow (draft state held in UI; persistent write occurs only on finalize) so incomplete invoices/images are not stored as finalized records prematurely."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Add offline customer search by name with instant, case-insensitive partial matching.",
+      "acceptanceCriteria": [
+        "Typing into search filters the customer list by case-insensitive partial name match.",
+        "Search works with the device offline.",
+        "Clearing search restores the full customer list."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/customers/CustomerSearchBar.tsx",
+          "operation": "create",
+          "description": "Implement a lightweight search input that updates filter text instantly for case-insensitive partial matching; compose shadcn-ui input styles. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/CustomersListPage.tsx",
+          "operation": "modify",
+          "description": "Wire the CustomerSearchBar into the customers list and apply instant client-side filtering of locally loaded customers (offline-safe), including clear-to-reset behavior."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Provide in-app backup export (data + images) to a downloadable file and restore from a backup file with overwrite confirmation.",
+      "acceptanceCriteria": [
+        "User can export a backup while offline; the browser initiates a file download that includes all data and images.",
+        "User can import/restore from the exported backup and the app state matches the backup (customers, invoices, images).",
+        "The app warns before overwriting existing data during restore and requires confirmation."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/backup/backupFormat.ts",
+          "operation": "create",
+          "description": "Define a versioned backup file format (JSON) that includes customers/invoices and encodes invoice images (e.g., as base64 or data URLs) so exports/imports are self-contained offline."
+        },
+        {
+          "path": "frontend/src/lib/backup/exportBackup.ts",
+          "operation": "create",
+          "description": "Implement export logic to read all local data and images from offline storage, serialize into the backup format, and trigger a file download (offline-safe)."
+        },
+        {
+          "path": "frontend/src/lib/backup/importBackup.ts",
+          "operation": "create",
+          "description": "Implement restore logic to parse a selected backup file, validate structure/version, and write customers/invoices/images into offline storage with an all-or-nothing approach to avoid corrupting existing stored data on failure."
+        },
+        {
+          "path": "frontend/src/pages/BackupRestorePage.tsx",
+          "operation": "create",
+          "description": "Create an in-app backup screen with Export and Restore actions, including a confirmation dialog before overwriting existing data; compose shadcn-ui alert dialog components. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/lib/offline/repository.ts",
+          "operation": "modify",
+          "description": "Add repository helpers to dump all data (including images) and to replace all local data from an imported backup safely."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire the Backup/Restore screen into navigation (as part of settings or a dedicated nav item) without adding unrelated top-level routes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Enable downloading invoice images (single and all as one bundle) from invoice detail, offline-safe.",
+      "acceptanceCriteria": [
+        "From an invoice detail view, user can download an individual attached image to the device.",
+        "User can also download all images for an invoice in a single action (as a single downloadable bundle/file).",
+        "Downloads work when offline."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/downloads/downloadUtils.ts",
+          "operation": "create",
+          "description": "Add utilities to trigger downloads from in-memory Blobs/strings (single-image download and generating a single offline bundle file for multiple images)."
+        },
+        {
+          "path": "frontend/src/lib/downloads/invoiceImageBundle.ts",
+          "operation": "create",
+          "description": "Implement logic to package all images for a given invoice into a single downloadable file (e.g., JSON bundle containing metadata + base64 image payloads) that works fully offline."
+        },
+        {
+          "path": "frontend/src/pages/InvoiceDetailPage.tsx",
+          "operation": "modify",
+          "description": "Add UI actions to download an individual image and to download all invoice images as one bundle file; ensure actions work from offline-stored blobs and show clear English error messages on failure."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Add settings screen to customize app displayed name (local persistence) and apply it in header and backup export metadata/filename.",
+      "acceptanceCriteria": [
+        "User can set and save a custom app name.",
+        "The custom app name appears in the main app header/navigation.",
+        "Exported backup filename and/or included metadata uses the custom app name.",
+        "Custom name persists after refresh and offline usage."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/settings/appSettings.ts",
+          "operation": "create",
+          "description": "Implement local settings persistence (e.g., localStorage) for a custom app display name, including getters/setters and a default name fallback."
+        },
+        {
+          "path": "frontend/src/pages/SettingsPage.tsx",
+          "operation": "create",
+          "description": "Create a settings screen that allows editing and saving the app display name with clear English validation/errors; compose shadcn-ui input/button components. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/AppHeader.tsx",
+          "operation": "create",
+          "description": "Add a mobile-first header that reads the custom app name from local settings and displays it consistently alongside the offline status indicator."
+        },
+        {
+          "path": "frontend/src/lib/backup/exportBackup.ts",
+          "operation": "modify",
+          "description": "Use the custom app name when generating export filenames and/or embedding metadata in the backup payload."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire the Settings screen into navigation and ensure AppHeader is used consistently across Customers, Customer detail, Invoice detail, and Settings views."
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Add validation and robust error handling with clear English messages across customer/invoice/image/backup flows.",
+      "acceptanceCriteria": [
+        "Attempting to save a customer without a name shows a clear validation message in English and blocks save.",
+        "Attempting to finalize an invoice without required fields shows a clear validation message in English and blocks finalize.",
+        "If an image fails to load/preview, the UI shows a non-crashing error state and allows removing the broken image.",
+        "If backup export/import fails, the UI shows a clear error message in English and does not corrupt existing stored data."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/validation/validators.ts",
+          "operation": "create",
+          "description": "Centralize basic validators for customer and invoice required fields and return user-friendly English error strings for UI consumption."
+        },
+        {
+          "path": "frontend/src/components/common/ErrorBanner.tsx",
+          "operation": "create",
+          "description": "Create a reusable non-blocking error banner/alert component for showing clear English error states across pages; compose shadcn-ui alert styles if available. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/customers/CustomerForm.tsx",
+          "operation": "modify",
+          "description": "Add name-required validation with clear English messaging and block save when invalid; ensure errors do not crash the UI."
+        },
+        {
+          "path": "frontend/src/components/invoices/InvoiceForm.tsx",
+          "operation": "modify",
+          "description": "Add required-field validation before finalize/save (and during image selection) with clear English messaging; block finalize when invalid."
+        },
+        {
+          "path": "frontend/src/components/invoices/ImagePreviewGallery.tsx",
+          "operation": "modify",
+          "description": "Handle broken/unloadable image previews gracefully by showing a non-crashing error state per image and allowing removal of the problematic item."
+        },
+        {
+          "path": "frontend/src/lib/backup/exportBackup.ts",
+          "operation": "modify",
+          "description": "Add guarded error handling so export failures show clear English messages and do not alter or corrupt existing local data."
+        },
+        {
+          "path": "frontend/src/lib/backup/importBackup.ts",
+          "operation": "modify",
+          "description": "Add guarded error handling and safe-restore behavior so import failures show clear English messages and do not overwrite existing local data."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Create a coherent mobile-first theme (avoid blue/purple) with clear navigation between core screens.",
+      "acceptanceCriteria": [
+        "UI is usable on a small mobile viewport with readable typography and touch-friendly controls.",
+        "Navigation between Customers list, Customer detail, Invoice detail, and Settings is clear and consistent.",
+        "Theme uses a consistent palette and typography and avoids blue/purple as primary accents."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "create",
+          "description": "Create global Tailwind + CSS variable setup for a cohesive mobile-first theme, selecting non-blue/non-purple primary accents and ensuring readable typography and touch targets."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Adjust theme tokens/extended colors (via CSS variables usage) as needed to support the non-blue/non-purple primary accent palette consistently across the app."
+        },
+        {
+          "path": "frontend/src/components/MobileNav.tsx",
+          "operation": "create",
+          "description": "Create a mobile-first navigation component (e.g., bottom nav or compact header nav) linking Customers and Settings, and providing consistent back navigation patterns; compose shadcn-ui navigation primitives if available. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Ensure all required screens (Customers list, Customer detail, Invoice detail, Settings) are reachable with clear, consistent navigation optimized for small screens."
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Add optional Internet Computer backup sync UI: when signed in and online, upload/download the latest backup; keep offline-first local behavior without sign-in.",
+      "acceptanceCriteria": [
+        "If not signed in, the app remains fully usable offline and local export/import still works.",
+        "If signed in and online, user can upload a backup to the canister successfully.",
+        "User can download the last uploaded backup from the canister and restore it.",
+        "If offline, cloud backup actions are disabled with a clear English message."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/cloudSync/cloudSync.ts",
+          "operation": "create",
+          "description": "Implement cloud sync helpers that call the existing backend interface methods (syncBackup/retrieveBackup) and integrate with the local backup export/import format without changing offline-first local behavior."
+        },
+        {
+          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "operation": "create",
+          "description": "Add a login/logout button using the existing Internet Identity hook to enable optional cloud backup sync; use the authorization component guidance for auth UI behaviors. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/cloud/CloudBackupPanel.tsx",
+          "operation": "create",
+          "description": "Create a UI panel for cloud backup upload/download that is enabled only when the user is signed in and online; show clear English disabled-state messages when offline or signed out; compose shadcn-ui buttons/alerts. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/BackupRestorePage.tsx",
+          "operation": "modify",
+          "description": "Integrate the CloudBackupPanel into the existing backup screen while ensuring local export/import remains available without sign-in (offline-first)."
+        },
+        {
+          "path": "frontend/src/components/AppHeader.tsx",
+          "operation": "modify",
+          "description": "Add the LoginButton to the header (or settings) to allow signing in for optional sync without blocking access to local data when signed out."
+        }
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "summary": "Add required generated static icon/logo assets under frontend/public/assets/generated and reference them in UI and PWA metadata where applicable.",
+      "acceptanceCriteria": [
+        "Generated images exist under frontend/public/assets/generated and are referenced by the frontend.",
+        "App uses the icon/logo in the UI (e.g., header) without routing through the backend.",
+        "PWA install metadata (if present) references the generated icon files."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/app-icon.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the generated static app icon file at the exact path frontend/public/assets/generated/app-icon.dim_512x512.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/wordmark-logo.dim_1200x300.png",
+          "operation": "create",
+          "description": "Add the generated static wordmark logo file at the exact path frontend/public/assets/generated/wordmark-logo.dim_1200x300.png."
+        },
+        {
+          "path": "frontend/src/components/AppHeader.tsx",
+          "operation": "modify",
+          "description": "Reference and render frontend/public/assets/generated/wordmark-logo.dim_1200x300.png (and/or the icon) in the app header for consistent shell branding."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Reference frontend/public/assets/generated/app-icon.dim_512x512.png in link tags (icon) and add a manifest link if using PWA metadata."
+        },
+        {
+          "path": "frontend/public/manifest.webmanifest",
+          "operation": "create",
+          "description": "Create a web manifest that references frontend/public/assets/generated/app-icon.dim_512x512.png so PWA install metadata uses the generated icon."
+        }
+      ]
+    }
+  ]
+}

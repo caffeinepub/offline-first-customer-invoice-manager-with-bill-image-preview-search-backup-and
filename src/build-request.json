@@ -1,0 +1,278 @@
+{
+  "kind": "build_request",
+  "title": "Offline-first customer & invoice manager with bill image preview, search, backup, and export",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Implement an offline-first data layer that persists all customers, invoices, and attached bill images locally on the device (survives reloads), and ensure the app remains usable with no network connection.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "I need a mobile application designed for offline use to support my business."
+        ]
+      },
+      "acceptanceCriteria": [
+        "With the device offline, the user can open the app, view existing customers/invoices, and create new customers/invoices without errors.",
+        "After a full page refresh/reopen, previously created customers/invoices/images are still present.",
+        "The UI clearly indicates offline/online status (text-only indicator is fine)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add customer management: create, view, edit, and delete customers with structured fields (at minimum: name, phone, email, address, notes) and show each customer’s data in a clearly structured customer detail view.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Add customer details",
+          "Organize each customer’s data in a structured manner."
+        ]
+      },
+      "acceptanceCriteria": [
+        "User can add a customer with required field: name; optional fields can be empty.",
+        "Customer list renders all customers and selecting a customer opens a detail view showing the structured fields.",
+        "User can edit customer fields and changes persist offline.",
+        "User can delete a customer and it no longer appears in search or lists."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Add invoice management per customer: create invoices with fields (invoice number, date, line items/description, total, status), attach one or more bill images to an invoice, and store the invoice under the correct customer.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Add customer details and invoices, including images of bills."
+        ]
+      },
+      "acceptanceCriteria": [
+        "From a customer detail page, user can create an invoice for that customer.",
+        "User can attach multiple images to an invoice using the device file picker.",
+        "Invoices are listed under the correct customer and open into an invoice detail view.",
+        "All invoice data and images persist offline after refresh."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement a “preview before finalize” flow for invoice bill images: when creating/editing an invoice, show a preview gallery of the selected images and require explicit confirmation to finalize/save the invoice.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Preview the images of the invoices before finalizing them.",
+          "includes the ability to preview and download invoice images."
+        ]
+      },
+      "acceptanceCriteria": [
+        "When images are selected, thumbnails (and a larger preview on tap/click) are shown before the invoice is finalized.",
+        "User can remove/replace selected images during the preview step before final save.",
+        "Invoice is not persisted as finalized until the user confirms (e.g., “Finalize/Save Invoice”)."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add customer search by name with instant filtering and support for partial matches; search must work fully offline.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Search for customers by name."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Typing into search filters the customer list by case-insensitive partial name match.",
+        "Search works with the device offline.",
+        "Clearing search restores the full customer list."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Provide an in-app backup system that supports (1) exporting all customer/invoice data plus invoice images to a downloadable file on the device, and (2) restoring from a previously exported backup file.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Include a backup system to ensure data safety.",
+          "Allow the data and images to be downloaded onto my mobile device."
+        ]
+      },
+      "acceptanceCriteria": [
+        "User can export a backup while offline; the browser initiates a file download that includes all data and images.",
+        "User can import/restore from the exported backup and the app state matches the backup (customers, invoices, images).",
+        "The app warns before overwriting existing data during restore and requires confirmation."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Enable downloading invoice images from an invoice detail screen (download a single image and/or download all images for that invoice in one action).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "includes the ability to preview and download invoice images."
+        ]
+      },
+      "acceptanceCriteria": [
+        "From an invoice detail view, user can download an individual attached image to the device.",
+        "User can also download all images for an invoice in a single action (as a single downloadable bundle/file).",
+        "Downloads work when offline."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Add an app settings screen that allows customizing the app’s displayed name (stored locally) and apply it consistently in the header/navigation and in exported backup filenames/metadata.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Customize the app’s name."
+        ]
+      },
+      "acceptanceCriteria": [
+        "User can set and save a custom app name.",
+        "The custom app name appears in the main app header/navigation.",
+        "Exported backup filename and/or included metadata uses the custom app name.",
+        "Custom name persists after refresh and offline usage."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Add basic data validation and error handling to keep the core flows “well-organized and error-free” (customer creation, invoice creation, image attachment/preview, export/import) with clear English user-facing messages.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Please ensure that the app is well-organized, error-free"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Attempting to save a customer without a name shows a clear validation message in English and blocks save.",
+        "Attempting to finalize an invoice without required fields shows a clear validation message in English and blocks finalize.",
+        "If an image fails to load/preview, the UI shows a non-crashing error state and allows removing the broken image.",
+        "If backup export/import fails, the UI shows a clear error message in English and does not corrupt existing stored data."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Create a coherent, mobile-first visual theme (avoid blue/purple) and apply it consistently across list/detail/edit screens, with clear navigation optimized for small screens.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "I need a mobile application designed for offline use to support my business."
+        ]
+      },
+      "acceptanceCriteria": [
+        "UI is usable on a small mobile viewport with readable typography and touch-friendly controls.",
+        "Navigation between Customers list, Customer detail, Invoice detail, and Settings is clear and consistent.",
+        "Theme uses a consistent palette and typography and avoids blue/purple as primary accents."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Add optional Internet Computer backup sync: when the user is signed in with Internet Identity and online, allow uploading the latest backup to the Motoko canister and downloading/restoring it later; offline-first behavior must still work without sign-in.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Include a backup system to ensure data safety."
+        ]
+      },
+      "acceptanceCriteria": [
+        "If not signed in, the app remains fully usable offline and local export/import still works.",
+        "If signed in and online, user can upload a backup to the canister successfully.",
+        "User can download the last uploaded backup from the canister and restore it.",
+        "If offline, cloud backup actions are disabled with a clear English message."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Implement the backend canister storage endpoints needed for optional cloud backup sync (store/retrieve a user-scoped backup payload), keeping all Motoko logic in the single main actor.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Include a backup system to ensure data safety."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Canister provides authenticated methods to save a backup payload for the caller and retrieve the latest payload for the caller.",
+        "Backup payload size constraints are handled gracefully (reject with a clear error rather than trapping).",
+        "Data is scoped per Internet Identity principal (one user cannot access another user’s backup)."
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Generate required static image assets (app icon and simple logo) and include them in the frontend as static files under frontend/public/assets/generated, and use them in the app shell (header/iconography) and PWA metadata where applicable.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Customize the app’s name."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Generated images exist under frontend/public/assets/generated and are referenced by the frontend.",
+        "App uses the icon/logo in the UI (e.g., header) without routing through the backend.",
+        "PWA install metadata (if present) references the generated icon files."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor (no additional backend services).",
+    "Use English for all user-facing text.",
+    "Do not modify files under frontend/src/components/ui; compose them instead.",
+    "Do not edit immutable paths listed in SYSTEM_CONTEXT (frontend/src/hooks/useInternetIdentity.ts/.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
+  ],
+  "nonGoals": [
+    "Building a native iOS/Android binary (the deliverable is a mobile-friendly web app/PWA).",
+    "Integrating third-party auth providers beyond Internet Identity.",
+    "Real-time multi-user collaboration or chat.",
+    "External database integrations (PostgreSQL/MySQL/MongoDB/Redis)."
+  ],
+  "imageRequirements": {
+    "required": [
+      "Minimalist receipt/invoice app icon (app-icon.dim_512x512.png)",
+      "Simple wordmark logo for an invoice/customer manager (wordmark-logo.dim_1200x300.png)"
+    ],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

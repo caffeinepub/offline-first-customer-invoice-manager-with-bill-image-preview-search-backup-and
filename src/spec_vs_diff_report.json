@@ -1,0 +1,80 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-10T09:04:30.614Z",
+  "summary": "Diff adds a TanStack Router-based mobile-first frontend shell (header/nav), offline/online indicator, customer/invoice UI components including an image preview/finalize step, backup payload format, and cloud-backup UI; backend adds a single Motoko actor with user-scoped backup storage methods. One backend acceptance criterion (payload size handling) is not evidenced. Diff also introduces user profile storage/endpoints not requested.",
+  "missing_requirements": [
+    {
+      "id": "REQ-12",
+      "requirement": "Handle backup payload size constraints gracefully (reject with a clear error rather than trapping).",
+      "reason": "The backend methods shown (`syncBackup(payload : Text)` and `retrieveBackup()`) store/retrieve a `Text` payload with no size checks or explicit graceful rejection logic evidenced.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Backend user profile storage and endpoints (get/save user profile)",
+      "reason": "BuildRequest focuses backend work on cloud backup sync endpoints for storing/retrieving a user-scoped backup payload; user profile persistence APIs are not requested.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Backend access-control initialization via secret admin token / authorization mixins",
+      "reason": "No requirement requests adding an authorization/access-control framework or admin-token initialization as part of the backup sync feature set (beyond scoping backups per principal).",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useActor.ts"
+      ]
+    }
+  ],
+  "confidence": 0.66,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/public/manifest.webmanifest",
+    "frontend/src/App.tsx",
+    "frontend/src/components/AppHeader.tsx",
+    "frontend/src/components/MobileNav.tsx",
+    "frontend/src/components/OnlineStatusIndicator.tsx",
+    "frontend/src/components/auth/LoginButton.tsx",
+    "frontend/src/components/cloud/CloudBackupPanel.tsx",
+    "frontend/src/components/common/ErrorBanner.tsx",
+    "frontend/src/components/customers/CustomerForm.tsx",
+    "frontend/src/components/customers/CustomerInvoicesPanel.tsx",
+    "frontend/src/components/customers/CustomerSearchBar.tsx",
+    "frontend/src/components/invoices/ImagePreviewGallery.tsx",
+    "frontend/src/components/invoices/InvoiceFinalizeStep.tsx",
+    "frontend/src/components/invoices/InvoiceForm.tsx",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/hooks/useOnlineStatus.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/lib/backup/backupFormat.ts",
+    "frontend/src/lib/backup/exportBackup.ts",
+    "frontend/src/lib/backup/importBackup.ts",
+    "frontend/src/lib/cloudSync/cloudSync.ts",
+    "frontend/src/lib/downloads/downloadUtils.ts",
+    "frontend/src/lib/downloads/invoiceImageBundle.ts",
+    "frontend/src/lib/offline/db.ts",
+    "frontend/src/lib/offline/models.ts",
+    "frontend/src/lib/offline/repository.ts",
+    "frontend/src/lib/settings/appSettings.ts",
+    "frontend/src/lib/validation/validators.ts",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/BackupRestorePage.tsx",
+    "frontend/src/pages/CustomerDetailPage.tsx",
+    "frontend/src/pages/CustomersListPage.tsx",
+    "frontend/src/pages/InvoiceDetailPage.tsx",
+    "frontend/src/pages/SettingsPage.tsx",
+    "frontend/src/utils/urlParams.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}

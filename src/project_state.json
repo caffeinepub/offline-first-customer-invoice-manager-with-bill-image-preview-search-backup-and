@@ -1,0 +1,179 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Offline-first mobile app for managing customers and invoices with bill images, preview before finalizing, customer search, structured customer records, backup, and local download/export; app name customizable.",
+  "architectural_notes": [
+    "Offline-first: core CRUD for customers/invoices and image attachments must work without network connectivity.",
+    "Backup must include both structured data and stored invoice images.",
+    "Support exporting/downloading data and images to device local storage."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Minimalist receipt/invoice app icon (app-icon.dim_512x512.png)\n- Simple wordmark logo for an invoice/customer manager (wordmark-logo.dim_1200x300.png)",
+  "existing_features": [
+    {
+      "id": "feature-implement-an-offline-first-data-layer-that-persists-all-customers-invoices-and-attached-bill-images-locally-on-the-device-survives-reloads-and-ensure-the-app-remains-usable-with-no-network-connection",
+      "title": "Implement an offline-first data layer that persists all customers, invoices, and attached bill images locally on the device (survives reloads), and ensure the app remains usable with no network connection.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-customer-management-create-view-edit-and-delete-customers-with-structured-fields-at-minimum-name-phone-email-address-notes-and-show-each-customer-s-data-in-a-clearly-structured-customer-detail-view",
+      "title": "Add customer management: create, view, edit, and delete customers with structured fields (at minimum: name, phone, email, address, notes) and show each customer’s data in a clearly structured customer detail view.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-invoice-management-per-customer-create-invoices-with-fields-invoice-number-date-line-items-description-total-status-attach-one-or-more-bill-images-to-an-invoice-and-store-the-invoice-under-the-correct-customer",
+      "title": "Add invoice management per customer: create invoices with fields (invoice number, date, line items/description, total, status), attach one or more bill images to an invoice, and store the invoice under the correct customer.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-preview-before-finalize-flow-for-invoice-bill-images-when-creating-editing-an-invoice-show-a-preview-gallery-of-the-selected-images-and-require-explicit-confirmation-to-finalize-save-the-invoice",
+      "title": "Implement a “preview before finalize” flow for invoice bill images: when creating/editing an invoice, show a preview gallery of the selected images and require explicit confirmation to finalize/save the invoice.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-customer-search-by-name-with-instant-filtering-and-support-for-partial-matches-search-must-work-fully-offline",
+      "title": "Add customer search by name with instant filtering and support for partial matches; search must work fully offline.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-an-in-app-backup-system-that-supports-1-exporting-all-customer-invoice-data-plus-invoice-images-to-a-downloadable-file-on-the-device-and-2-restoring-from-a-previously-exported-backup-file",
+      "title": "Provide an in-app backup system that supports (1) exporting all customer/invoice data plus invoice images to a downloadable file on the device, and (2) restoring from a previously exported backup file.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enable-downloading-invoice-images-from-an-invoice-detail-screen-download-a-single-image-and-or-download-all-images-for-that-invoice-in-one-action",
+      "title": "Enable downloading invoice images from an invoice detail screen (download a single image and/or download all images for that invoice in one action).",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-app-settings-screen-that-allows-customizing-the-app-s-displayed-name-stored-locally-and-apply-it-consistently-in-the-header-navigation-and-in-exported-backup-filenames-metadata",
+      "title": "Add an app settings screen that allows customizing the app’s displayed name (stored locally) and apply it consistently in the header/navigation and in exported backup filenames/metadata.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-basic-data-validation-and-error-handling-to-keep-the-core-flows-well-organized-and-error-free-customer-creation-invoice-creation-image-attachment-preview-export-import-with-clear-english-user-facing-messages",
+      "title": "Add basic data validation and error handling to keep the core flows “well-organized and error-free” (customer creation, invoice creation, image attachment/preview, export/import) with clear English user-facing messages.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-coherent-mobile-first-visual-theme-avoid-blue-purple-and-apply-it-consistently-across-list-detail-edit-screens-with-clear-navigation-optimized-for-small-screens",
+      "title": "Create a coherent, mobile-first visual theme (avoid blue/purple) and apply it consistently across list/detail/edit screens, with clear navigation optimized for small screens.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-optional-internet-computer-backup-sync-when-the-user-is-signed-in-with-internet-identity-and-online-allow-uploading-the-latest-backup-to-the-motoko-canister-and-downloading-restoring-it-later-offline-first-behavior-must-still-work-without-sign-in",
+      "title": "Add optional Internet Computer backup sync: when the user is signed in with Internet Identity and online, allow uploading the latest backup to the Motoko canister and downloading/restoring it later; offline-first behavior must still work without sign-in.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-required-static-image-assets-app-icon-and-simple-logo-and-include-them-in-the-frontend-as-static-files-under-frontend-public-assets-generated-and-use-them-in-the-app-shell-header-iconography-and-pwa-metadata-where-applicable",
+      "title": "Generate required static image assets (app icon and simple logo) and include them in the frontend as static files under frontend/public/assets/generated, and use them in the app shell (header/iconography) and PWA metadata where applicable.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Offline-first mobile app for business customer & invoice management",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add and manage customer details with structured per-customer data organization",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Create invoices and attach bill images to invoices",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Preview invoice images before finalizing invoices",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Search customers by name",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Backup system to ensure offline data and images safety",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Download/export stored data and invoice images onto the mobile device",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Allow customizing the app’s name",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Quality goal: well-organized UI and error-free core flows (invoice image preview + download)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Implement the backend canister storage endpoints needed for optional cloud backup sync (store/retrieve a user-scoped backup payload), keeping all Motoko logic in the single main actor.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Offline-first customer & invoice manager with bill image preview, search, backup, and export",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
